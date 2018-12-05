@@ -19,11 +19,11 @@ public class StudentServiceTest extends BasicSpringContextTest {
 
     public Student init(){
         Student student = new Student();
-        student.setSno(12402020);
-        student.setName("008");
+        student.setSno(12402025);
+        student.setName("013");
         student.setGender(GenderEnum.FEMALE.getCode());
-        student.setAge(25);
-        student.setSdept("english");
+        student.setAge(26);
+        student.setSdept("电器自动化");
         Date date = new Date();
         student.setCreateTime(date);
         student.setUpdateTime(date);
@@ -34,8 +34,9 @@ public class StudentServiceTest extends BasicSpringContextTest {
     public void testCreate(){
         Student student = init();
         System.out.println("要插入的数据为：" + JSON.toJSONString(student));
-        int id = studentService.create(student);
-        System.out.println(String.format("create success, id = %s", id));
+        //成功插入的数量
+        int count = studentService.create(student);
+        System.out.println(String.format("create success, 影响的行数为 = %s，成功插入数据的主键id = %s", count, student.getId()));
     }
 
     @Test
