@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hp.dao.StudentDao">
+
+    <sql id="select_all">
+        SELECT id, sno, name, gender, age, sdept, createTime, updateTime, isDeleted
+        from student
+    </sql>
+
+    <insert id="create" parameterType="map" useGeneratedKeys="true" keyProperty="id">
+        insert into student(sno, name, gender, age, sdept, createTime, updateTime, isDeleted)
+		values ( #{sno}, #{name}, #{gender}, #{age}, #{sdept}, #{createTime}, #{updateTime}, #{isDeleted} )
+    </insert>
+
+    <select id="loadById" parameterType="map" resultType="Student">
+        <include refid="select_all"/>
+        where id = #{id}
+    </select>
+
+    <update id="update" parameterType="map">
+        update student
+        set name = #{name}, gender = #{gender}, age = #{age}, sdept = #{sdept}, updateTime = #{updateTime}
+        where id = #{id} and isDeleted = 0
+    </update>
+
+    <update id="deleteById" parameterType="map">
+        update student
+        set isDeleted = 1, updateTime = NOW()
+        where id = #{id}
+    </update>
+
+    <select id="fuzzySearch" parameterType="map" resultType="Student">
+        <include refid="select_all"/>
+        where isDeleted = 0
+        <if test=" keyword != null and keyword != '' ">
+            and name like CONCAT('%',#{keyword},'%')
+        </if>
+        ORDER BY createTime DESC
+        <if test=" limit != null and limit != 0 ">
+            limit #{start}, #{limit}
+        </if>
+    </select>
+
+    <select id="fuzzySearchCount" parameterType="map" resultType="java.lang.Integer">
+        SELECT count(1) FROM student
+        where isDeleted = 0
+        <if test="keyword != null and keyword != '' ">
+            and name like CONCAT('%',#{keyword},'%')
+        </if>
+    </select>
+
+</mapper>

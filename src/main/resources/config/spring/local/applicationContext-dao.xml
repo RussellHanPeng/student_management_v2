@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <!--获取连接数据库的配置文件-->
+    <context:property-placeholder location="classpath:config/jdbc/db.properties"/>
+
+    <!--配置数据源-->
+    <!--<bean class="org.apache.commons.dbcp2.BasicDataSource" id="dataSource">-->
+        <!--<property name="driverClassName" value="${driverClassName}"/>-->
+        <!--<property name="url" value="${url}"/>-->
+        <!--<property name="username" value="${username}"/>-->
+        <!--<property name="password" value="${password}"/>-->
+    <!--</bean>-->
+
+    <bean class="org.springframework.jdbc.datasource.DriverManagerDataSource" id="driverManagerDataSource">
+        <property name="driverClassName" value="${driverClassName}"/>
+        <property name="url" value="${url}"/>
+        <property name="username" value="${username}"/>
+        <property name="password" value="${password}"/>
+    </bean>
+
+    <!-- 配置SqlSessionFactory -->
+    <bean class="org.mybatis.spring.SqlSessionFactoryBean" id="sqlSessionFactory">
+        <!--注入数据源-->
+        <!--<property name="dataSource" ref="dataSource"/>-->
+        <property name="dataSource" ref="driverManagerDataSource"/>
+        <!-- mybatis批量别名配置,指定mapper.xml映射的实体所在的包 -->
+        <property name="typeAliasesPackage" value="com.hp.entity"/>
+
+        <!--
+            指定mapper.xml文件所在路径
+            如果不指定该属性，则抱异常：
+            Invalid bound statement (not found): com.hp.dao.AccountMapper.queryMoney
+        -->
+        <property name="mapperLocations" value="classpath*:config/sql-map/**/*.xml"/>
+    </bean>
+
+    <!-- 配置Mapper代理对象方式一：MapperFactoryBean（了解） -->
+    <!-- 通过MapperFactoryBean生成的代理对象，一次只能针对一个接口进行生成 -->
+    <!--<bean class="org.mybatis.spring.mapper.MapperFactoryBean" id="accountMapper">-->
+        <!--<property name="sqlSessionFactory" ref="sqlSessionFactory"/>-->
+        <!--<property name="mapperInterface" value="com.hp.dao.AccountMapper"/>-->
+    <!--</bean>-->
+
+    <!-- 批量代理对象的生成 -->
+    <!-- 注意事项：mapper接口类和mapper映射文件同包同名 -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer" id="mapperScannerConfigurer">
+        <!-- 指定需要生成代理的接口所在的包名 -->
+        <property name="basePackage" value="com.hp.dao"/>
+        <!-- 注意事项：千万不要配置SqlSessionFactory，要配置sqlSessionFactoryBeanName -->
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+    </bean>
+
+    <!-- 配置平台事务管理器 -->
+    <bean class="org.springframework.jdbc.datasource.DataSourceTransactionManager" id="transactionManager">
+        <property name="dataSource" ref="driverManagerDataSource"/>
+    </bean>
+
+    <!--事务通知配置-->
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <tx:method name="*" propagation="REQUIRED" isolation="DEFAULT"/>
+        </tx:attributes>
+    </tx:advice>
+
+    <!-- 基于AspectJ + XML方式实现声明式事务 -->
+    <aop:config>
+        <aop:advisor advice-ref="txAdvice" pointcut="execution(* *..*.*ServiceImpl*.*(..))"/>
+    </aop:config>
+
+</beans>
