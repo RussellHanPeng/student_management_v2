@@ -9,7 +9,7 @@
         from student
     </sql>
 
-    <insert id="create" parameterType="map" useGeneratedKeys="true" keyProperty="id">
+    <insert id="create" parameterType="Student" useGeneratedKeys="true" keyProperty="id" >
         insert into student(sno, name, gender, age, sdept, createTime, updateTime, isDeleted)
 		values ( #{sno}, #{name}, #{gender}, #{age}, #{sdept}, #{createTime}, #{updateTime}, #{isDeleted} )
     </insert>
@@ -19,7 +19,7 @@
         where id = #{id}
     </select>
 
-    <update id="update" parameterType="map">
+    <update id="update" parameterType="Student">
         update student
         set name = #{name}, gender = #{gender}, age = #{age}, sdept = #{sdept}, updateTime = #{updateTime}
         where id = #{id} and isDeleted = 0
